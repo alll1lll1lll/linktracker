@@ -1,0 +1,15 @@
+package backend.academy.linktracker.bot.commands;
+
+import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.SendMessage;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public abstract class Command {
+    private final String commandName;
+    private final String description;
+
+    public abstract SendMessage handle(Update update, long chatId, String text);
+}
