@@ -26,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +51,6 @@ class ListenerServiceTest {
         when(baseResponse.isOk()).thenReturn(true);
         when(telegramBot.execute(any(SetMyCommands.class))).thenReturn(baseResponse);
         when(commandService.getAllCommandList()).thenReturn(Collections.emptyList());
-        Mockito.lenient().when(sendResponse.isOk()).thenReturn(true);
     }
 
     @Test
@@ -64,20 +62,28 @@ class ListenerServiceTest {
 
     @Test
     void shouldProcessCommandUpdate() {
+        long chatId = 100L;
+        String commandText = "/start";
+
+        Update update = mock(Update.class);
+        Message message = mock(Message.class);
+        Chat chat = mock(Chat.class);
+        SendMessage expectedRequest = new SendMessage(chatId, "command response");
+
+        when(update.message()).thenReturn(message);
+        when(message.chat()).thenReturn(chat);
+        when(message.text()).thenReturn(commandText);
+        when(chat.id()).thenReturn(chatId);
+
+        when(commandService.processCommand(eq(commandText), eq(update), eq(chatId)))
+                .thenReturn(expectedRequest);
+        when(telegramBot.execute(expectedRequest)).thenReturn(sendResponse);
+
         listenerService.run();
         ArgumentCaptor<UpdatesListener> listenerCaptor = ArgumentCaptor.forClass(UpdatesListener.class);
         verify(telegramBot).setUpdatesListener(listenerCaptor.capture(), any(ExceptionHandler.class));
         UpdatesListener capturedListener = listenerCaptor.getValue();
-        Update update = mock(Update.class);
-        Message message = mock(Message.class);
-        Chat chat = mock(Chat.class);
-        when(update.message()).thenReturn(message);
-        when(message.chat()).thenReturn(chat);
-        when(message.text()).thenReturn("/start");
-        when(chat.id()).thenReturn(100L);
-        SendMessage expectedRequest = new SendMessage(100L, "сommand response");
-        when(commandService.processCommand(eq("/start"), eq(update), eq(100L))).thenReturn(expectedRequest);
-        when(telegramBot.execute(expectedRequest)).thenReturn(sendResponse);
+
         capturedListener.process(List.of(update));
         verify(commandService).processCommand(eq("/start"), eq(update), eq(100L));
         verify(telegramBot).execute(expectedRequest);
@@ -85,16 +91,18 @@ class ListenerServiceTest {
 
     @Test
     void shouldIgnoreInvalidUpdates() {
-        listenerService.run();
-        ArgumentCaptor<UpdatesListener> listenerCaptor = ArgumentCaptor.forClass(UpdatesListener.class);
-        verify(telegramBot).setUpdatesListener(listenerCaptor.capture(), any(ExceptionHandler.class));
-        UpdatesListener capturedListener = listenerCaptor.getValue();
         Update updateNullMessage = mock(Update.class);
         when(updateNullMessage.message()).thenReturn(null);
         Update updateNullText = mock(Update.class);
         Message message = mock(Message.class);
         when(updateNullText.message()).thenReturn(message);
         when(message.text()).thenReturn(null);
+
+        listenerService.run();
+        ArgumentCaptor<UpdatesListener> listenerCaptor = ArgumentCaptor.forClass(UpdatesListener.class);
+        verify(telegramBot).setUpdatesListener(listenerCaptor.capture(), any(ExceptionHandler.class));
+        UpdatesListener capturedListener = listenerCaptor.getValue();
+
         capturedListener.process(List.of(updateNullMessage, updateNullText));
         verify(commandService, never()).processCommand(any(), any(), anyLong());
         verify(telegramBot, never()).execute(any(SendMessage.class));
