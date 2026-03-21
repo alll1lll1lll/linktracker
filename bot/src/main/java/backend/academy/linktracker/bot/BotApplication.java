@@ -1,11 +1,14 @@
 package backend.academy.linktracker.bot;
 
+import backend.academy.linktracker.bot.properties.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@EnableConfigurationProperties(AppProperties.class)
 public class BotApplication {
 
     public static void main(String[] args) {

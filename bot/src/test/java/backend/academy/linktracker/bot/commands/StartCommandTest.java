@@ -3,6 +3,7 @@ package backend.academy.linktracker.bot.commands;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import backend.academy.linktracker.bot.client.ScrapperClient;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
@@ -14,7 +15,8 @@ class StartCommandTest {
 
     @Test
     void shouldReturnWelcomeMessage() {
-        StartCommand command = new StartCommand();
+        ScrapperClient scrapperClient = mock(ScrapperClient.class);
+        StartCommand command = new StartCommand(scrapperClient);
 
         Update update = mock(Update.class);
         Message message = mock(Message.class);
@@ -30,6 +32,6 @@ class StartCommandTest {
         Long chatId = (Long) result.getParameters().get("chat_id");
 
         Assertions.assertEquals(123L, chatId);
-        Assertions.assertTrue(text.contains("Добро пожаловать"));
+        Assertions.assertTrue(text.contains("добро пожаловать"));
     }
 }

@@ -1,65 +1,96 @@
 package backend.academy.linktracker.bot.service;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 import backend.academy.linktracker.bot.commands.Command;
-import backend.academy.linktracker.bot.commands.HelpCommand;
-import backend.academy.linktracker.bot.commands.StartCommand;
+import backend.academy.linktracker.bot.commands.CommandType;
+import backend.academy.linktracker.bot.enumResponse.ResponseCode;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CommandServiceTest {
 
     @Mock
-    private StartCommand startCommand;
+    private MessageService messageService;
 
     @Mock
-    private HelpCommand helpCommand;
+    private CommandParser commandParser;
+
+    @Mock
+    private Command mockCommand;
+
+    @Mock
+    private Update update;
 
     private CommandService commandService;
 
+    private final long CHAT_ID = 12345L;
+    private final String UNKNOWN_COMMAND_MESSAGE = "Unknown command";
+    private final String START_COMMAND_NAME = "/start";
+
     @BeforeEach
     void setUp() {
-        when(startCommand.getCommandName()).thenReturn("/start");
-        when(helpCommand.getCommandName()).thenReturn("/help");
-        List<Command> commands = Arrays.asList(startCommand, helpCommand);
-        commandService = new CommandService(commands);
+        when(mockCommand.getCommandType()).thenReturn(CommandType.START);
+
+        commandService = new CommandService(List.of(mockCommand), messageService, commandParser);
     }
 
     @Test
-    void shouldProcessStartCommand() {
-        Update update = mock(Update.class);
-        long chatId = 1L;
-        String commandName = "/start";
-        when(startCommand.handle(update, chatId, commandName)).thenReturn(new SendMessage(chatId, "OK"));
-        SendMessage result = commandService.processCommand(commandName, update, chatId);
-        Assertions.assertNotNull(result);
-        verify(startCommand).handle(update, chatId, commandName);
-        verify(helpCommand, Mockito.never()).handle(any(), anyLong(), anyString());
+    @DisplayName("процесс обработки известной команды без аргументов")
+    void process_shouldExecuteKnownCommand_whenNoArgumentsExpected() {
+        String fullText = START_COMMAND_NAME;
+        SendMessage expectedResponse = new SendMessage(CHAT_ID, "Success");
+
+        when(commandParser.hasArguments(fullText)).thenReturn(false);
+        when(mockCommand.handle(update, CHAT_ID, fullText)).thenReturn(expectedResponse);
+
+        SendMessage actualResponse = commandService.process(START_COMMAND_NAME, fullText, update, CHAT_ID);
+
+        assertEquals(expectedResponse, actualResponse);
+        verify(mockCommand).handle(update, CHAT_ID, fullText);
     }
 
     @Test
-    void shouldReturnUnknownCommandMessage() {
-        Update update = mock(Update.class);
-        SendMessage result = commandService.processCommand("/unknown", update, 1L);
-        String text = (String) result.getParameters().get("text");
-        Assertions.assertEquals("Неизвестная команда, используйте /help", text);
-        verify(startCommand, Mockito.never()).handle(any(), anyLong(), anyString());
-        verify(helpCommand, Mockito.never()).handle(any(), anyLong(), anyString());
+    @DisplayName("возвращает сообщение о неизвестной команде, если команда не найдена")
+    void notFound() {
+        String unknownCommand = "/unknown";
+        when(messageService.getMessage(ResponseCode.UNKNOWN_COMMAND)).thenReturn(UNKNOWN_COMMAND_MESSAGE);
+
+        SendMessage actualResponse = commandService.process(unknownCommand, unknownCommand, update, CHAT_ID);
+
+        assertEquals(CHAT_ID, actualResponse.getParameters().get("chat_id"));
+        assertEquals(UNKNOWN_COMMAND_MESSAGE, actualResponse.getParameters().get("text"));
+        verify(mockCommand, never()).handle(any(), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("возвращает сообщение о неизвестной команде, если переданы аргументы, а команда их не принимает")
+    void argumentsProvidedButNotAccepted() {
+        String fullTextWithArgs = START_COMMAND_NAME + " some_args";
+        when(commandParser.hasArguments(fullTextWithArgs)).thenReturn(true);
+        when(mockCommand.acceptsArguments()).thenReturn(false);
+        when(messageService.getMessage(ResponseCode.UNKNOWN_COMMAND)).thenReturn(UNKNOWN_COMMAND_MESSAGE);
+
+        SendMessage actualResponse = commandService.process(START_COMMAND_NAME, fullTextWithArgs, update, CHAT_ID);
+
+        assertEquals(CHAT_ID, actualResponse.getParameters().get("chat_id"));
+        assertEquals(UNKNOWN_COMMAND_MESSAGE, actualResponse.getParameters().get("text"));
+        verify(mockCommand, never()).handle(any(), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("Getter allCommandList возвращает правильный список команд")
+    void getAllCommandList_shouldReturnCorrectList() {
+        assertEquals(1, commandService.getAllCommandList().size());
+        assertEquals(mockCommand, commandService.getAllCommandList().get(0));
     }
 }

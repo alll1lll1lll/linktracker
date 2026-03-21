@@ -1,8 +1,6 @@
 package backend.academy.linktracker.bot.service;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,6 +33,9 @@ class ListenerServiceTest {
     private TelegramBot telegramBot;
 
     @Mock
+    private UpdateRouter updateRouter;
+
+    @Mock
     private CommandService commandService;
 
     @InjectMocks
@@ -56,7 +57,7 @@ class ListenerServiceTest {
     @Test
     void shouldRegisterListenerOnRun() {
         listenerService.run();
-        verify(telegramBot).setUpdatesListener(any(), any(ExceptionHandler.class));
+        verify(telegramBot).setUpdatesListener(any(UpdatesListener.class), any(ExceptionHandler.class));
         verify(telegramBot).execute(any(SetMyCommands.class));
     }
 
@@ -75,9 +76,8 @@ class ListenerServiceTest {
         when(message.text()).thenReturn(commandText);
         when(chat.id()).thenReturn(chatId);
 
-        when(commandService.processCommand(eq(commandText), eq(update), eq(chatId)))
-                .thenReturn(expectedRequest);
-        when(telegramBot.execute(expectedRequest)).thenReturn(sendResponse);
+        when(updateRouter.route(any(Update.class))).thenReturn(expectedRequest);
+        when(telegramBot.execute(any(SendMessage.class))).thenReturn(sendResponse);
 
         listenerService.run();
         ArgumentCaptor<UpdatesListener> listenerCaptor = ArgumentCaptor.forClass(UpdatesListener.class);
@@ -85,7 +85,8 @@ class ListenerServiceTest {
         UpdatesListener capturedListener = listenerCaptor.getValue();
 
         capturedListener.process(List.of(update));
-        verify(commandService).processCommand(eq("/start"), eq(update), eq(100L));
+
+        verify(updateRouter).route(update);
         verify(telegramBot).execute(expectedRequest);
     }
 
@@ -104,7 +105,7 @@ class ListenerServiceTest {
         UpdatesListener capturedListener = listenerCaptor.getValue();
 
         capturedListener.process(List.of(updateNullMessage, updateNullText));
-        verify(commandService, never()).processCommand(any(), any(), anyLong());
+        verify(updateRouter, never()).route(any(Update.class));
         verify(telegramBot, never()).execute(any(SendMessage.class));
     }
 }
