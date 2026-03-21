@@ -8,8 +8,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public abstract class Command {
-    private final String commandName;
-    private final String description;
+    private final CommandType commandType;
 
     public abstract SendMessage handle(Update update, long chatId, String text);
+
+    public boolean acceptsArguments() {
+        return false;
+    }
 }

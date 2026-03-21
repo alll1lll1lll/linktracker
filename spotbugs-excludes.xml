@@ -21,7 +21,9 @@
             <Bug pattern="SQL_INJECTION_VERTX"/>
         </Or>
     </Match>
-
+    <Match>
+        <Package name="~backend\.academy\.linktracker\.grpc.*" />
+    </Match>
     <!--
         see: https://spotbugs.readthedocs.io/en/stable/
      -->

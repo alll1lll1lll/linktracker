@@ -1,5 +1,7 @@
 package backend.academy.linktracker.bot.service;
 
+import static org.slf4j.MDC.putCloseable;
+
 import backend.academy.linktracker.bot.commands.Command;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -9,23 +11,26 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import com.pengrad.telegrambot.response.BaseResponse;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ListenerService {
+
     private final TelegramBot telegramBot;
+    private final UpdateRouter updateRouter;
     private final CommandService commandService;
 
     @EventListener(ApplicationReadyEvent.class)
     public void run() {
-        this.setBotCommands();
-        this.telegramBot.setUpdatesListener(
+        setBotCommands();
+        telegramBot.setUpdatesListener(
                 updates -> {
                     processUpdates(updates);
                     return UpdatesListener.CONFIRMED_UPDATES_ALL;
@@ -38,57 +43,56 @@ public class ListenerService {
     }
 
     private void processUpdates(List<Update> updates) {
-        for (Update update : updates) {
-            try {
-                if (update.message() != null && update.message().text() != null) {
-                    long chatId = update.message().chat().id();
-                    String text = update.message().text();
+        updates.forEach(this::processUpdate);
+    }
 
-                    log.atInfo()
-                            .addKeyValue("event", "received_message")
-                            .addKeyValue("chat_id", chatId)
-                            .addKeyValue("text", text)
-                            .log("Received new message");
+    private void processUpdate(Update update) {
+        try (MDC.MDCCloseable _ = putCloseable("update_id", String.valueOf(update.updateId()))) {
+            handleMessage(update);
+        } catch (Exception e) {
+            log.error("error update", e);
+        }
+    }
 
-                    SendMessage responseMessage;
-                    responseMessage = commandService.processCommand(text, update, chatId);
-                    BaseResponse response = telegramBot.execute(responseMessage);
-                    if (!response.isOk()) {
-                        log.atError()
-                                .addKeyValue("event", "telegram_send_error")
-                                .addKeyValue("error_code", response.errorCode())
-                                .addKeyValue("description", response.description())
-                                .addKeyValue("chat_id", chatId)
-                                .log("Failed to send message to Telegram");
-                    }
-                }
-            } catch (Exception e) {
-                log.atError()
-                        .addKeyValue("event", "update_processing_error")
-                        .addKeyValue("update_id", update.updateId())
-                        .setCause(e)
-                        .log("Error processing update");
-            }
+    private void handleMessage(Update update) {
+        if (update.message() == null || update.message().text() == null) {
+            return;
+        }
+        long chatId = update.message().chat().id();
+        String text = update.message().text();
+
+        try (MDC.MDCCloseable _ = putCloseable("chat_id", String.valueOf(chatId))) {
+            log.info("new message received: '{}'", text);
+            SendMessage responseMessage = updateRouter.route(update);
+            sendResponse(responseMessage);
+        }
+    }
+
+    private void sendResponse(SendMessage responseMessage) {
+        if (responseMessage == null) return;
+
+        BaseResponse response = telegramBot.execute(responseMessage);
+        if (!response.isOk()) {
+            log.atError()
+                    .addKeyValue("error_code", response.errorCode())
+                    .addKeyValue("description", response.description())
+                    .log("error to send message to tg");
         }
     }
 
     private void setBotCommands() {
         List<Command> commandList = commandService.getAllCommandList();
         BotCommand[] botCommands = commandList.stream()
-                .map(command -> new BotCommand(command.getCommandName(), command.getDescription()))
+                .map(command -> new BotCommand(
+                        command.getCommandType().getCommandName(),
+                        command.getCommandType().getDescription()))
                 .toArray(BotCommand[]::new);
-        SetMyCommands myCommands = new SetMyCommands(botCommands);
-        BaseResponse response = telegramBot.execute(myCommands);
+
+        BaseResponse response = telegramBot.execute(new SetMyCommands(botCommands));
         if (response.isOk()) {
-            log.atInfo()
-                    .addKeyValue("bot_commands_status", "set")
-                    .log("Bot commands menu has been successfully updated");
+            log.atInfo().addKeyValue("bot_commands_status", "set").log("Bot commands menu updated");
         } else {
-            log.atError()
-                    .addKeyValue("bot_commands_status", "failed")
-                    .addKeyValue("error_code", response.errorCode())
-                    .addKeyValue("description", response.description())
-                    .log("Failed to set bot commands");
+            log.atError().addKeyValue("error_code", response.errorCode()).log("Failed to set bot commands");
         }
     }
 }

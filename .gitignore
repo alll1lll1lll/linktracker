@@ -52,4 +52,5 @@ build/
 ### Mac OS ###
 .DS_Store
 bot/.env
+scrapper/.env
 .idea

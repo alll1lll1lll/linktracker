@@ -1,14 +1,31 @@
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
 
 spring:
   application:
     name: bot
+  messages:
+    encoding: UTF-8
+  grpc:
+    server:
+      port: 9090
+    client:
+      channels:
+        scrapper-service:
+          address: "localhost:9091"
 
 app:
+  client-type: grpc
+  scrapper:
+    url: "http://localhost:8081"
+    grpc-address: "localhost:9091"
   telegram:
     url: https://api.telegram.org/bot
-    token: ${TELEGRAM_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
+    token: ${TELEGRAM_TOKEN}
     update-listener-sleep: 1s
     debug: false
 

@@ -3,6 +3,7 @@ package backend.academy.linktracker.bot.commands;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import backend.academy.linktracker.bot.client.ScrapperClient;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
@@ -12,12 +13,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class HelpCommandTest {
-
     @Test
     void shouldReturnCommandsList() {
-        List<Command> commandList = List.of(new StartCommand(), new HelpCommand(List.of()));
+        ScrapperClient scrapperClient = mock(ScrapperClient.class);
+        List<Command> commandList = List.of(new StartCommand(scrapperClient), new HelpCommand());
 
-        HelpCommand helpCommand = new HelpCommand(commandList);
+        HelpCommand helpCommand = new HelpCommand();
 
         Update update = mock(Update.class);
         Message message = mock(Message.class);

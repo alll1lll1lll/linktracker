@@ -1,12 +1,11 @@
 package backend.academy.linktracker.bot;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -78,11 +77,7 @@ class TelegramBotIntegrationTest implements WithAssertions {
 
         assertFalse(getUpdatesResponse.isOk());
         assertEquals(404, getUpdatesResponse.errorCode());
-
-        verify(
-                1,
-                postRequestedFor(urlPathTemplate("/bot{token}/getUpdates"))
-                        .withPathParam("token", equalTo(telegramProperties.getToken())));
+        verify(1, postRequestedFor(urlEqualTo("/bot" + telegramProperties.getToken() + "/getUpdates")));
     }
 
     @Test
@@ -154,7 +149,6 @@ class TelegramBotIntegrationTest implements WithAssertions {
                 .extracting(Message::from)
                 .returns("testuser", User::username);
 
-        verify(postRequestedFor(urlPathTemplate("/bot{token}/getUpdates"))
-                .withPathParam("token", equalTo(telegramProperties.getToken())));
+        verify(postRequestedFor(urlEqualTo("/bot" + telegramProperties.getToken() + "/getUpdates")));
     }
 }

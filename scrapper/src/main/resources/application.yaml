@@ -4,10 +4,28 @@ server:
 spring:
   application:
     name: scrapper
+  grpc:
+    server:
+      port: 9091
+    client:
+      bot-service:
+        address: "static://localhost:9090"
+        negotiation-type: plaintext
 
 app:
+  client-type: grpc
+  bot:
+    url: "http://localhost:8080"
+    grpc-address: "localhost:9090"
   stackoverflow:
-    key: ${STACKOVERFLOW_KEY} # Use env variable. DO NOT KEEP TOKEN HERE
-    access-token: ${STACKOVERFLOW_ACCESS_KEY} # Use env variable. DO NOT KEEP TOKEN HERE
+    key: ${STACKOVERFLOW_KEY}
+    access-token: ${STACKOVERFLOW_ACCESS_KEY}
   github:
-    token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
+    token: ${GITHUB_TOKEN}
+  scheduler:
+    link-update-delay: 30000
+
+logging:
+  structured:
+    format:
+      console: logstash

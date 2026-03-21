@@ -8,6 +8,10 @@ LinkTracker – Telegram-бот, который отслеживает изме�
 
 - `/start` — приветствие пользователя.
 - `/help` — вывод списка доступных команд.
+- `/track` — начать отслеживание ссылки (интерактивный диалог с возможностью добавить теги).
+- `/untrack` — прекратить отслеживание ссылки.
+- `/list` — вывод списка всех отслеживаемых ссылок. Поддерживает фильтрацию по тегам (например, /list bug).
+- `/cancel` — прерывание текущего интерактивного действия (например, отмена добавления ссылки).
 - Обработка неизвестных команд с выводом сообщения об ошибке.
 - **Bonus**: Автоматическая настройка меню команд (кнопка "Меню") при запуске бота.
 
@@ -17,12 +21,29 @@ LinkTracker – Telegram-бот, который отслеживает изме�
 
 Для работы бота необходимо получить API Token у [@BotFather](https://t.me/BotFather) в Telegram.
 
+На гитхабе нужно зайти в Developer Settings -> Personal Access Token -> Token (classic)
+
+На Stackoverflow на сайт регистрации приложений Stack Apps: https://stackapps.com/apps/oauth/register (нужно быть залогиненным под своим аккаунтом StackOverflow), заполнить форму и получить ключ.
+
 ### 2. Настройка конфигурации
 
 Согласно требованиям безопасности, токен **не зашит в код**. Вы можете передать в файл .env, предварительно создав его в корне проекта
+В BotApplication:
 
 TELEGRAM_TOKEN=токен
+
+В ScrapperApplication:
+
+STACKOVERFLOW_KEY=ключ
+
+STACKOVERFLOW_ACCESS_KEY=ключ доступа
+
+GITHUB_TOKEN=токен
 
 ### 3. Запуск
 
 Нужно запустить класс BotApplication, который находится в package backend.academy.linktracker.bot
+
+Нужно запустить класс ScrapperApplication, который находится в package backend.academy.linktracker.scrapper
+
+Нужно обязательно выставить UTF-8, чтобы ответы бота (messages.properties) правильно вывелись.
