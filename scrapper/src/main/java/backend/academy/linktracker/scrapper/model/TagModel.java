@@ -1,18 +1,15 @@
 package backend.academy.linktracker.scrapper.model;
 
-import java.net.URI;
-import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkModel {
+public class TagModel {
     private Long id;
-    private URI url;
-    private OffsetDateTime lastUpdated;
+    private String name;
 }

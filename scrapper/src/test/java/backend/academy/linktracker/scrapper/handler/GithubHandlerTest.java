@@ -13,17 +13,16 @@ import backend.academy.linktracker.scrapper.dto.response.GithubResponse;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.GitHubParser;
 import backend.academy.linktracker.scrapper.parser.RepositoryInfo;
+import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -42,11 +41,18 @@ public class GithubHandlerTest {
     @Mock
     private GitHubParser parser;
 
-    @InjectMocks
+    @Mock
+    SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    LinkRepository linkRepository;
+
     private GithubHandler ghHandler;
 
     @BeforeEach
     void setUp() {
+        ghHandler = new GithubHandler(botClient, gitHubClient, parser, subscriptionRepository, linkRepository);
+
         when(parser.parseRepositoryInfo(any(URI.class))).thenReturn(Optional.of(new RepositoryInfo("user", "repo")));
     }
 
@@ -55,14 +61,11 @@ public class GithubHandlerTest {
         LinkModel link = new LinkModel(
                 10L,
                 URI.create("https://github.com/user/repo"),
-                OffsetDateTime.now().minusDays(1),
-                Map.of(
-                        111L, List.of("tag1"),
-                        222L, Collections.emptyList()));
+                OffsetDateTime.now().minusDays(1));
         GithubResponse response = mock(GithubResponse.class);
         when(response.getPushedAt()).thenReturn(OffsetDateTime.now());
         when(gitHubClient.fetchRepoInfo(anyString(), anyString())).thenReturn(response);
-
+        when(subscriptionRepository.findChatSubscribers(10L)).thenReturn(List.of(111L, 222L));
         ghHandler.handle(link);
 
         ArgumentCaptor<LinkUpdate> captor = ArgumentCaptor.forClass(LinkUpdate.class);
@@ -77,7 +80,7 @@ public class GithubHandlerTest {
     @Test
     void handle_ShouldDoNothing_WhenLinkCannotBeParsed() {
         when(parser.parseRepositoryInfo(any(URI.class))).thenReturn(Optional.empty());
-        LinkModel link = new LinkModel(1L, URI.create("https://not-github.com"), OffsetDateTime.now(), Map.of());
+        LinkModel link = new LinkModel(1L, URI.create("https://not-github.com"), OffsetDateTime.now());
 
         ghHandler.handle(link);
 
@@ -88,7 +91,7 @@ public class GithubHandlerTest {
     @Test
     void handle_ShouldNotSendUpdate_WhenNoSubscribers() {
         LinkModel link = new LinkModel(
-                1L, URI.create("https://github.com/a/b"), OffsetDateTime.now().minusDays(1), Map.of());
+                1L, URI.create("https://github.com/a/b"), OffsetDateTime.now().minusDays(1));
         GithubResponse response = mock(GithubResponse.class);
         when(response.getPushedAt()).thenReturn(OffsetDateTime.now());
         when(gitHubClient.fetchRepoInfo(anyString(), anyString())).thenReturn(response);

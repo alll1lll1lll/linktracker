@@ -15,11 +15,10 @@ import backend.academy.linktracker.scrapper.exception.LinkNotFoundForUserExcepti
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.repository.ChatRepository;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +34,9 @@ class LinkServiceTest {
 
     @Mock
     private ChatRepository chatRepository;
+
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
 
     @Mock
     private LinkHandler linkHandler;
@@ -58,19 +60,21 @@ class LinkServiceTest {
         AddLinkRequest request = new AddLinkRequest(url, List.of("java"));
 
         LinkModel linkModel = new LinkModel();
-        linkModel.setChatSubscribers(new HashMap<>());
+        linkModel.setId(10L);
+        linkModel.setUrl(url);
 
         when(chatRepository.exists(chatId)).thenReturn(true);
         when(linkHandler.getHost()).thenReturn("github.com");
         ReflectionTestUtils.setField(linksService, "handlers", List.of(linkHandler));
         when(linkRepository.saveOrGet(url)).thenReturn(linkModel);
 
+        when(subscriptionRepository.isSubscribed(chatId, 10L)).thenReturn(false);
+
         LinkResponse response = linksService.add(chatId, request);
 
         assertThat(response).isNotNull();
-        assertThat(linkModel.getChatSubscribers()).containsKey(chatId);
-        assertThat(linkModel.getChatSubscribers().get(chatId)).contains("java");
         verify(linkRepository, times(1)).saveOrGet(url);
+        verify(subscriptionRepository, times(1)).subscribe(chatId, 10L, List.of("java"));
     }
 
     @Test
@@ -79,11 +83,12 @@ class LinkServiceTest {
         RemoveLinkRequest request = new RemoveLinkRequest(url);
 
         LinkModel linkModel = new LinkModel();
-        linkModel.setChatSubscribers(new ConcurrentHashMap<>());
+        linkModel.setId(20L);
+        linkModel.setUrl(url);
 
         when(chatRepository.exists(chatId)).thenReturn(true);
         when(linkRepository.findByUrl(url)).thenReturn(Optional.of(linkModel));
-
+        when(subscriptionRepository.isSubscribed(chatId, 20L)).thenReturn(false);
         assertThatThrownBy(() -> linksService.remove(chatId, request)).isInstanceOf(LinkNotFoundForUserException.class);
     }
 }

@@ -4,9 +4,17 @@ server:
 spring:
   application:
     name: scrapper
+  datasource:
+    url: jdbc:postgresql://localhost:5432/scrapper
+    username: scrapper
+    password: password
+  liquibase:
+    enabled: true
+    change-log: classpath:migrations/master.xml
   grpc:
     server:
       port: 9091
+      host: 0.0.0.0
     client:
       bot-service:
         address: "static://localhost:9090"
@@ -14,6 +22,7 @@ spring:
 
 app:
   client-type: grpc
+  database-access-type: orm
   bot:
     url: "http://localhost:8080"
     grpc-address: "localhost:9090"
@@ -26,6 +35,10 @@ app:
     link-update-delay: 30000
 
 logging:
+  logging:
+    level:
+      org.springframework.boot.autoconfigure.liquibase: DEBUG
+      liquibase: DEBUG
   structured:
     format:
       console: logstash
