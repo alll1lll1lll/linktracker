@@ -4,6 +4,8 @@ import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.client.stackOverflow.StackOverflowClient;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.StackOverflowParser;
+import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +17,13 @@ public class StackOverflowHandler extends AbstractLinkHandler {
     private final StackOverflowClient client;
     private final StackOverflowParser parser;
 
-    public StackOverflowHandler(BotClient botClient, StackOverflowClient client, StackOverflowParser parser) {
-        super(botClient);
+    public StackOverflowHandler(
+            BotClient botClient,
+            StackOverflowClient client,
+            StackOverflowParser parser,
+            LinkRepository linkRepository,
+            SubscriptionRepository subscriptionRepository) {
+        super(botClient, subscriptionRepository, linkRepository);
         this.client = client;
         this.parser = parser;
     }

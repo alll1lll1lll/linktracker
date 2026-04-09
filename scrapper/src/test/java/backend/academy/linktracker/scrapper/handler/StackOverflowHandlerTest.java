@@ -10,6 +10,8 @@ import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.client.stackOverflow.StackOverflowClient;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.StackOverflowParser;
+import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import backend.academy.linktracker.scrapper.service.LinkUpdateService;
 import java.net.URI;
 import java.util.List;
@@ -36,10 +38,13 @@ class StackOverflowHandlerTest {
 
     private StackOverflowHandler stackOverflowHandler;
     private LinkUpdateService linkUpdateService;
+    private LinkRepository linkRepository;
+    private SubscriptionRepository subscriptionRepository;
 
     @BeforeEach
     void setUp() {
-        stackOverflowHandler = new StackOverflowHandler(botClient, stackOverflowClient, stackOverflowUrlParser);
+        stackOverflowHandler = new StackOverflowHandler(
+                botClient, stackOverflowClient, stackOverflowUrlParser, linkRepository, subscriptionRepository);
         linkUpdateService = new LinkUpdateService(List.of(stackOverflowHandler));
         when(stackOverflowUrlParser.parseQuestionId(any(URI.class))).thenReturn(Optional.of("12345"));
     }

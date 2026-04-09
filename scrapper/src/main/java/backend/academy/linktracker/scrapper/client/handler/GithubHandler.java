@@ -4,6 +4,8 @@ import backend.academy.linktracker.scrapper.client.github.GitHubClient;
 import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.GitHubParser;
+import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +17,13 @@ public class GithubHandler extends AbstractLinkHandler {
     private final GitHubClient client;
     private final GitHubParser parser;
 
-    public GithubHandler(BotClient botClient, GitHubClient client, GitHubParser parser) {
-        super(botClient);
+    public GithubHandler(
+            BotClient botClient,
+            GitHubClient client,
+            GitHubParser parser,
+            SubscriptionRepository subscriptionRepository,
+            LinkRepository linkRepository) {
+        super(botClient, subscriptionRepository, linkRepository);
         this.client = client;
         this.parser = parser;
     }

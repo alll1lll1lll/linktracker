@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -20,10 +21,11 @@ public class LinkUpdaterScheduler {
     private final LinkUpdateService linkUpdateService;
 
     @Scheduled(fixedDelayString = "${app.scheduler.link-update-delay}")
+    @Transactional
     public void update() {
         try (var _ = putCloseable("run_id", UUID.randomUUID().toString())) {
             log.atInfo().addKeyValue("event", "scheduler_start").log("start updating links");
-            List<LinkModel> links = linkRepository.findAll();
+            List<LinkModel> links = linkRepository.findLinksToUpdate(50, 0);
             if (links.isEmpty()) {
                 log.atInfo().addKeyValue("event", "no_links_to_update").log("tracked links not found.");
                 return;

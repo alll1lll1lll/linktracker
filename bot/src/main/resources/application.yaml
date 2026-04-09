@@ -13,6 +13,7 @@ spring:
   grpc:
     server:
       port: 9090
+      host: 0.0.0.0
     client:
       channels:
         scrapper-service:

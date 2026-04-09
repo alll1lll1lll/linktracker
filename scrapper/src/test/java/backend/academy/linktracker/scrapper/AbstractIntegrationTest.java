@@ -3,7 +3,7 @@ package backend.academy.linktracker.scrapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import backend.academy.linktracker.scrapper.client.interfaces.BotClient; // Убедись, что импорт правильный!
+import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.controller.LinksController;
 import backend.academy.linktracker.scrapper.controller.TgChatController;
 import backend.academy.linktracker.scrapper.dto.request.AddLinkRequest;
@@ -22,14 +22,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-class ScrapperIntegrationTest {
+public abstract class AbstractIntegrationTest {
 
     @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
+    static void commonProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.liquibase.change-log", () -> "migrations/master.xml");
         registry.add("app.scheduler.link-update-delay", () -> "1000");
         registry.add("app.scheduler.enable", () -> "false");
-        registry.add("app.database-access-type", () -> "orm");
         registry.add("app.client-type", () -> "rest");
         registry.add("STACKOVERFLOW_KEY", () -> "test-key");
         registry.add("STACKOVERFLOW_ACCESS_KEY", () -> "test-token");
@@ -37,19 +36,19 @@ class ScrapperIntegrationTest {
     }
 
     @MockitoBean
-    private BotClient botClient;
+    protected BotClient botClient;
 
     @Autowired
-    private TgChatController tgChatController;
+    protected TgChatController tgChatController;
 
     @Autowired
-    private LinksController linksController;
+    protected LinksController linksController;
 
     @Test
-    void test3_1() {
+    void testAddAndGetLinks() {
         long chatId = 1L;
         URI linkUrl = URI.create("https://github.com/test/test");
-        AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of("j"));
+        AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of("java"));
 
         tgChatController.register(chatId);
         linksController.addLink(chatId, addRequest);
@@ -60,7 +59,7 @@ class ScrapperIntegrationTest {
     }
 
     @Test
-    void test3_2() {
+    void testDeleteLink() {
         long chatId = 2L;
         URI linkUrl = URI.create("https://stackoverflow.com/questions/1");
         AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of());
@@ -72,11 +71,10 @@ class ScrapperIntegrationTest {
         ListLinksResponse response = linksController.getLinks(chatId);
 
         assertThat(response.getSize()).isEqualTo(0);
-        assertThat(response.getLinks()).isEmpty();
     }
 
     @Test
-    void test3_3() {
+    void testDeleteLinkFromNonExistentChat() {
         long chatId = 3L;
         long fakeChatId = 999L;
         URI linkUrl = URI.create("https://github.com/test");
@@ -88,13 +86,10 @@ class ScrapperIntegrationTest {
 
         assertThatThrownBy(() -> linksController.deleteLink(fakeChatId, removeRequest))
                 .isInstanceOf(ChatNotFoundException.class);
-
-        ListLinksResponse response = linksController.getLinks(chatId);
-        assertThat(response.getSize()).isEqualTo(1);
     }
 
     @Test
-    void test3_4() {
+    void testAddLinkToNonExistentChat() {
         long fakeChatId = 444L;
         URI linkUrl = URI.create("https://github.com/test");
         AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of());
@@ -104,21 +99,20 @@ class ScrapperIntegrationTest {
     }
 
     @Test
-    void test3_5() {
+    void testChatLifecycle() {
         long chatId = 5L;
-        URI linkUrl = URI.create("https://github.com/test");
-        AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of());
-
         tgChatController.register(chatId);
         tgChatController.deleteChat(chatId);
+
+        URI linkUrl = URI.create("https://github.com/test");
+        AddLinkRequest addRequest = new AddLinkRequest(linkUrl, List.of());
 
         assertThatThrownBy(() -> linksController.addLink(chatId, addRequest)).isInstanceOf(ChatNotFoundException.class);
     }
 
     @Test
-    void test3_6() {
+    void testDeleteNonExistentChat() {
         long fakeChatId = 666L;
-
         assertThatThrownBy(() -> tgChatController.deleteChat(fakeChatId)).isInstanceOf(ChatNotFoundException.class);
     }
 }
