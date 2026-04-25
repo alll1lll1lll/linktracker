@@ -8,7 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import backend.academy.linktracker.scrapper.client.github.GitHubClient;
-import backend.academy.linktracker.scrapper.dto.response.GithubResponse;
+import backend.academy.linktracker.scrapper.dto.response.github.GithubResponse;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

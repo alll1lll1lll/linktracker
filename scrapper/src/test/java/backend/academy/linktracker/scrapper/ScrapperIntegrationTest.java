@@ -3,7 +3,7 @@ package backend.academy.linktracker.scrapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import backend.academy.linktracker.scrapper.client.interfaces.BotClient; // Убедись, что импорт правильный!
+import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.controller.LinksController;
 import backend.academy.linktracker.scrapper.controller.TgChatController;
 import backend.academy.linktracker.scrapper.dto.request.AddLinkRequest;

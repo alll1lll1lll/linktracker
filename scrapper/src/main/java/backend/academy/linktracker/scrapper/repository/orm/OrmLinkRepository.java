@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 public class OrmLinkRepository implements LinkRepository {
@@ -41,11 +42,11 @@ public class OrmLinkRepository implements LinkRepository {
     }
 
     @Override
-    public List<LinkModel> findLinksToUpdate(int limit, int offset) {
+    @Transactional
+    public List<LinkModel> findLinksToUpdate(int limit, OffsetDateTime now) {
         return entityManager
                 .createQuery("SELECT l FROM LinkEntity l ORDER BY l.lastUpdated ASC NULLS FIRST", LinkEntity.class)
                 .setMaxResults(limit)
-                .setFirstResult(offset)
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .getResultStream()
                 .map(this::toModel)
@@ -65,6 +66,7 @@ public class OrmLinkRepository implements LinkRepository {
         model.setId(entity.getId());
         model.setUrl(URI.create(entity.getUrl()));
         model.setLastUpdated(entity.getLastUpdated());
+        model.setLastCheckedAt(entity.getLastCheckedAt());
         return model;
     }
 }

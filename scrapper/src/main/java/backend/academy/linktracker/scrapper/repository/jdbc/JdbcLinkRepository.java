@@ -23,7 +23,7 @@ public class JdbcLinkRepository implements LinkRepository {
                 .sql("""
                     INSERT INTO link (url) VALUES (:url)
                     ON CONFLICT (url) DO UPDATE SET url = EXCLUDED.url
-                    RETURNING id, url, last_updated
+                    RETURNING id, url, last_updated, last_checked_at
                 """)
                 .param("url", url.toString())
                 .query(this::mapRow)
@@ -33,24 +33,31 @@ public class JdbcLinkRepository implements LinkRepository {
     @Override
     public Optional<LinkModel> findByUrl(URI url) {
         return jdbcClient
-                .sql("SELECT id, url, last_updated FROM link WHERE url = :url")
+                .sql("SELECT id, url, last_updated, last_checked_at FROM link WHERE url = :url")
                 .param("url", url.toString())
                 .query(this::mapRow)
                 .optional();
     }
 
     @Override
-    public List<LinkModel> findLinksToUpdate(int limit, int offset) {
+    public List<LinkModel> findLinksToUpdate(int limit, OffsetDateTime now) {
         return jdbcClient
                 .sql("""
-                    SELECT id, url, last_updated
-                    FROM link
-                    ORDER BY last_updated ASC NULLS FIRST
-                    LIMIT :limit OFFSET :offset
-                    FOR UPDATE SKIP LOCKED
+                    UPDATE link
+                    SET last_checked_at = :now
+                    WHERE id IN (
+                        SELECT id
+                        FROM link
+                        WHERE last_checked_at IS NULL
+                           OR last_checked_at < (:now - INTERVAL '1 minute')
+                        ORDER BY last_checked_at ASC NULLS FIRST
+                        LIMIT :limit
+                        FOR UPDATE SKIP LOCKED
+                    )
+                    RETURNING id, url, last_updated, last_checked_at
                 """)
                 .param("limit", limit)
-                .param("offset", offset)
+                .param("now", now)
                 .query(this::mapRow)
                 .list();
     }
@@ -70,6 +77,7 @@ public class JdbcLinkRepository implements LinkRepository {
         model.setId(rs.getLong("id"));
         model.setUrl(URI.create(rs.getString("url")));
         model.setLastUpdated(rs.getObject("last_updated", OffsetDateTime.class));
+        model.setLastCheckedAt(rs.getObject("last_checked_at", OffsetDateTime.class));
         return model;
     }
 }

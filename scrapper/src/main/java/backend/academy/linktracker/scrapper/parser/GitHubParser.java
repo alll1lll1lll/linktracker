@@ -12,15 +12,21 @@ public class GitHubParser {
         if (url == null || !GITHUB_HOST.equals(url.getHost())) {
             return Optional.empty();
         }
-        String[] parts = url.getPath().split("/");
-        if (parts.length < 3) {
+
+        String path = url.getPath().replaceAll("^/|/$", "");
+        String[] parts = path.split("/");
+
+        if (parts.length != 2) {
             return Optional.empty();
         }
-        String owner = parts[1];
-        String repo = parts[2];
+
+        String owner = parts[0];
+        String repo = parts[1];
+
         if (owner.isBlank() || repo.isBlank()) {
             return Optional.empty();
         }
+
         return Optional.of(new RepositoryInfo(owner, repo));
     }
 }

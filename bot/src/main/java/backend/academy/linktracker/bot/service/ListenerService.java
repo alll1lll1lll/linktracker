@@ -72,6 +72,7 @@ public class ListenerService {
         if (responseMessage == null) return;
 
         BaseResponse response = telegramBot.execute(responseMessage);
+
         if (!response.isOk()) {
             log.atError()
                     .addKeyValue("error_code", response.errorCode())

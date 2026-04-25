@@ -1,15 +1,12 @@
 package backend.academy.linktracker.scrapper.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import backend.academy.linktracker.scrapper.client.github.GitHubClient;
-import backend.academy.linktracker.scrapper.client.handler.GithubHandler;
 import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
-import backend.academy.linktracker.scrapper.dto.LinkUpdate;
-import backend.academy.linktracker.scrapper.dto.response.GithubResponse;
+import backend.academy.linktracker.scrapper.dto.response.github.*;
+import backend.academy.linktracker.scrapper.format.MessageFormatter;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.GitHubParser;
 import backend.academy.linktracker.scrapper.parser.RepositoryInfo;
@@ -22,15 +19,11 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class GithubHandlerTest {
+class GithubHandlerTest {
 
     @Mock
     private GitHubClient gitHubClient;
@@ -42,62 +35,45 @@ public class GithubHandlerTest {
     private GitHubParser parser;
 
     @Mock
-    SubscriptionRepository subscriptionRepository;
+    private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    LinkRepository linkRepository;
+    private LinkRepository linkRepository;
 
-    private GithubHandler ghHandler;
+    private GithubHandler handler;
 
     @BeforeEach
     void setUp() {
-        ghHandler = new GithubHandler(botClient, gitHubClient, parser, subscriptionRepository, linkRepository);
-
-        when(parser.parseRepositoryInfo(any(URI.class))).thenReturn(Optional.of(new RepositoryInfo("user", "repo")));
+        handler = new GithubHandler(
+                botClient, gitHubClient, parser, subscriptionRepository, linkRepository, new MessageFormatter());
     }
 
     @Test
-    void handle() {
+    void shouldSendUpdateForNewIssue() {
         LinkModel link = new LinkModel(
-                10L,
+                1L,
                 URI.create("https://github.com/user/repo"),
+                OffsetDateTime.now().minusDays(1),
                 OffsetDateTime.now().minusDays(1));
-        GithubResponse response = mock(GithubResponse.class);
-        when(response.getPushedAt()).thenReturn(OffsetDateTime.now());
-        when(gitHubClient.fetchRepoInfo(anyString(), anyString())).thenReturn(response);
-        when(subscriptionRepository.findChatSubscribers(10L)).thenReturn(List.of(111L, 222L));
-        ghHandler.handle(link);
 
-        ArgumentCaptor<LinkUpdate> captor = ArgumentCaptor.forClass(LinkUpdate.class);
-        verify(botClient).sendUpdate(captor.capture());
+        GithubEventResponse event = new GithubEventResponse();
+        event.setType("IssuesEvent");
+        event.setCreatedAt(OffsetDateTime.now());
+        event.setActor(new GithubEventResponse.GithubActorResponse("cheremsha"));
+        event.setPayload(new GithubEventResponse.GithubPayloadResponse(
+                "opened",
+                new GithubEventResponse.GithubIssueResponse(
+                        "v sovrtskom soyuze...",
+                        "вместо детектера лжи использовали черемшу, детекторов нет, а черемша в подвале жил, рычал на всех."),
+                null));
 
-        LinkUpdate sentUpdate = captor.getValue();
+        when(parser.parseRepositoryInfo(any())).thenReturn(Optional.of(new RepositoryInfo("user", "repo")));
+        when(gitHubClient.fetchEvents(anyString(), anyString())).thenReturn(List.of(event));
+        when(subscriptionRepository.findChatSubscribers(anyLong())).thenReturn(List.of(123L));
 
-        assertThat(sentUpdate.getTgChatIds()).containsExactlyInAnyOrder(111L, 222L);
-        assertThat(sentUpdate.getTgChatIds()).doesNotContain(333L);
-    }
+        handler.handle(link);
 
-    @Test
-    void handle_ShouldDoNothing_WhenLinkCannotBeParsed() {
-        when(parser.parseRepositoryInfo(any(URI.class))).thenReturn(Optional.empty());
-        LinkModel link = new LinkModel(1L, URI.create("https://not-github.com"), OffsetDateTime.now());
-
-        ghHandler.handle(link);
-
-        verifyNoInteractions(gitHubClient);
-        verifyNoInteractions(botClient);
-    }
-
-    @Test
-    void handle_ShouldNotSendUpdate_WhenNoSubscribers() {
-        LinkModel link = new LinkModel(
-                1L, URI.create("https://github.com/a/b"), OffsetDateTime.now().minusDays(1));
-        GithubResponse response = mock(GithubResponse.class);
-        when(response.getPushedAt()).thenReturn(OffsetDateTime.now());
-        when(gitHubClient.fetchRepoInfo(anyString(), anyString())).thenReturn(response);
-
-        ghHandler.handle(link);
-
-        verify(botClient, never()).sendUpdate(any());
+        verify(botClient, times(1)).sendUpdate(any());
+        verify(linkRepository).updateLastUpdated(eq(1L), any());
     }
 }

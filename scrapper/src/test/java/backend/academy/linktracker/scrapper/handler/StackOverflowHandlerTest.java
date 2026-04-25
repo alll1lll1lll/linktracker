@@ -1,19 +1,18 @@
 package backend.academy.linktracker.scrapper.handler;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-import backend.academy.linktracker.scrapper.client.handler.StackOverflowHandler;
 import backend.academy.linktracker.scrapper.client.interfaces.BotClient;
 import backend.academy.linktracker.scrapper.client.stackOverflow.StackOverflowClient;
+import backend.academy.linktracker.scrapper.dto.response.stackoverflow.*;
+import backend.academy.linktracker.scrapper.format.MessageFormatter;
 import backend.academy.linktracker.scrapper.model.LinkModel;
 import backend.academy.linktracker.scrapper.parser.StackOverflowParser;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
-import backend.academy.linktracker.scrapper.service.LinkUpdateService;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,55 +20,65 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class StackOverflowHandlerTest {
 
     @Mock
-    private StackOverflowClient stackOverflowClient;
+    private StackOverflowClient client;
 
     @Mock
     private BotClient botClient;
 
     @Mock
-    private StackOverflowParser stackOverflowUrlParser;
+    private StackOverflowParser parser;
 
-    private StackOverflowHandler stackOverflowHandler;
-    private LinkUpdateService linkUpdateService;
+    @Mock
     private LinkRepository linkRepository;
+
+    @Mock
     private SubscriptionRepository subscriptionRepository;
+
+    private StackOverflowHandler handler;
 
     @BeforeEach
     void setUp() {
-        stackOverflowHandler = new StackOverflowHandler(
-                botClient, stackOverflowClient, stackOverflowUrlParser, linkRepository, subscriptionRepository);
-        linkUpdateService = new LinkUpdateService(List.of(stackOverflowHandler));
-        when(stackOverflowUrlParser.parseQuestionId(any(URI.class))).thenReturn(Optional.of("12345"));
+        handler = new StackOverflowHandler(
+                botClient, client, parser, linkRepository, subscriptionRepository, new MessageFormatter());
     }
 
     @Test
-    void shouldNotCrashWhenStackOverflowApiReturnsError() {
-        LinkModel link = new LinkModel();
-        link.setId(1L);
-        link.setUrl(URI.create("https://stackoverflow.com/questions/12345/some-title"));
+    void shouldHandleBothAnswersAndComments() {
+        LinkModel link = new LinkModel(
+                1L,
+                URI.create("https://stackoverflow.com/questions/1"),
+                OffsetDateTime.now().minusDays(1),
+                OffsetDateTime.now().minusDays(1));
+        long now = OffsetDateTime.now().toEpochSecond();
 
-        when(stackOverflowClient.fetchQuestion(anyString()))
-                .thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+        StackOverflowResponse qResp = new StackOverflowResponse();
+        StackOverflowResponse.StackOverflowItem item = new StackOverflowResponse.StackOverflowItem();
+        qResp.setItems(List.of(item));
 
-        assertDoesNotThrow(() -> linkUpdateService.processUpdate(link));
-    }
+        StackOverflowAnswerResponse aResp =
+                new StackOverflowAnswerResponse(List.of(new StackOverflowAnswerResponse.StackOverflowAnswerItemResponse(
+                        new StackOverflowAnswerResponse.StackOverflowOwnerResponse("ne shisha"), now, "Answer Body")));
 
-    @Test
-    void shouldNotCrashWhenInvalid() {
-        LinkModel link = new LinkModel();
-        link.setId(2L);
-        link.setUrl(URI.create("https://stackoverflow.com/questions/67890/another-title"));
+        StackOverflowCommentResponse cResp = new StackOverflowCommentResponse(
+                List.of(new StackOverflowCommentResponse.StackOverflowCommentItemResponse(
+                        new StackOverflowCommentResponse.StackOverflowOwnerResponse("ne spesha"),
+                        now,
+                        "Comment Body")));
 
-        when(stackOverflowClient.fetchQuestion(anyString()))
-                .thenThrow(new RuntimeException("JSON parse error: items is null"));
+        when(parser.parseQuestionId(any())).thenReturn(Optional.of("1"));
+        when(client.fetchQuestion(anyString())).thenReturn(qResp);
+        when(client.fetchAnswers(anyString(), any(OffsetDateTime.class))).thenReturn(aResp);
+        when(client.fetchComments(anyString(), any(OffsetDateTime.class))).thenReturn(cResp);
+        when(subscriptionRepository.findChatSubscribers(1L)).thenReturn(List.of(123L));
 
-        assertDoesNotThrow(() -> linkUpdateService.processUpdate(link));
+        handler.handle(link);
+
+        verify(botClient, times(2)).sendUpdate(any());
+        verify(linkRepository).updateLastUpdated(eq(1L), any());
     }
 }

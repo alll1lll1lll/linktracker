@@ -11,8 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import backend.academy.linktracker.scrapper.client.stackOverflow.StackOverflowClient;
-import backend.academy.linktracker.scrapper.dto.response.StackOverflowItem;
-import backend.academy.linktracker.scrapper.dto.response.StackOverflowResponse;
+import backend.academy.linktracker.scrapper.dto.response.stackoverflow.StackOverflowResponse;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
@@ -58,7 +57,7 @@ class StackOverflowClientTest {
         assertNotNull(response);
         assertFalse(response.getItems().isEmpty(), "список пуст!");
 
-        StackOverflowItem item = response.getItems().get(0);
+        StackOverflowResponse.StackOverflowItem item = response.getItems().get(0);
         assertEquals(questionId, item.getQuestionId());
         assertEquals(OffsetDateTime.parse(dateStr), item.getLastActivityDate());
     }

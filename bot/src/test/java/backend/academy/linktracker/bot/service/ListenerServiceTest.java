@@ -77,6 +77,8 @@ class ListenerServiceTest {
         when(chat.id()).thenReturn(chatId);
 
         when(updateRouter.route(any(Update.class))).thenReturn(expectedRequest);
+        when(sendResponse.isOk()).thenReturn(true);
+
         when(telegramBot.execute(any(SendMessage.class))).thenReturn(sendResponse);
 
         listenerService.run();

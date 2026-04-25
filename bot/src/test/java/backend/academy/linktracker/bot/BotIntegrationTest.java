@@ -7,6 +7,7 @@ import backend.academy.linktracker.bot.client.ScrapperClient;
 import backend.academy.linktracker.bot.exception.ServiceUnavailableException;
 import backend.academy.linktracker.bot.service.UpdateRouter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +30,9 @@ class BotIntegrationTest {
 
     @MockitoBean
     private ScrapperClient scrapperClient;
+
+    @MockitoBean(answers = Answers.RETURNS_MOCKS)
+    private TelegramBot telegramBot;
 
     private Update createMockUpdate(long chatId, String text) {
         Update update = Mockito.mock(Update.class);
