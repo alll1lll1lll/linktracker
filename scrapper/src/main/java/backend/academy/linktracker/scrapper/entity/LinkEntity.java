@@ -23,4 +23,7 @@ public class LinkEntity {
 
     @Column(name = "last_updated")
     private OffsetDateTime lastUpdated;
+
+    @Column(name = "last_checked_at")
+    private OffsetDateTime lastCheckedAt;
 }

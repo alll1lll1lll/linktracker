@@ -11,7 +11,7 @@ public interface LinkRepository {
 
     Optional<LinkModel> findByUrl(URI url);
 
-    List<LinkModel> findLinksToUpdate(int limit, int offset);
+    List<LinkModel> findLinksToUpdate(int limit, OffsetDateTime now);
 
     void updateLastUpdated(long linkId, OffsetDateTime time);
 }

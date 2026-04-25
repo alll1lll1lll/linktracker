@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.dto.response;
+package backend.academy.linktracker.scrapper.dto.response.github;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.OffsetDateTime;

@@ -15,4 +15,5 @@ public class LinkModel {
     private Long id;
     private URI url;
     private OffsetDateTime lastUpdated;
+    private OffsetDateTime lastCheckedAt;
 }

@@ -9,7 +9,8 @@ CREATE TABLE chat (
 CREATE TABLE link (
     id BIGSERIAL PRIMARY KEY,
     url VARCHAR(2048) UNIQUE NOT NULL,
-    last_updated TIMESTAMP WITH TIME ZONE
+    last_updated TIMESTAMP WITH TIME ZONE,
+    last_checked_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE subscription (
@@ -36,3 +37,4 @@ CREATE INDEX IF NOT EXISTS idx_link_last_updated ON link(last_updated);
 CREATE INDEX IF NOT EXISTS idx_subscription_chat_id ON subscription(chat_id);
 CREATE INDEX IF NOT EXISTS idx_subscription_link_id ON subscription(link_id);
 CREATE INDEX IF NOT EXISTS idx_subscription_tag_chat_id ON subscription_tag(chat_id);
+

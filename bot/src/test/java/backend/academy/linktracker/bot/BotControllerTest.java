@@ -6,11 +6,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import backend.academy.linktracker.bot.service.ListenerService;
 import com.pengrad.telegrambot.TelegramBot;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -20,10 +21,10 @@ public class BotControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private TelegramBot telegramBot;
 
-    @Mock
+    @MockitoBean(answers = Answers.RETURNS_MOCKS)
     private ListenerService listenerService;
 
     @Test
