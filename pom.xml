@@ -41,8 +41,8 @@
     <properties>
         <revision>0.0.1</revision>
 
-        <java.version>22</java.version>
-        <maven.version>3.9.9</maven.version>
+        <java.version>25</java.version>
+        <maven.version>3.9.12</maven.version>
 
         <awaitility.version>4.3.0</awaitility.version>
         <commons-codec.version>1.21.0</commons-codec.version>

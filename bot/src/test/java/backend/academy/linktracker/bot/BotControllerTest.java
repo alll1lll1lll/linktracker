@@ -1,10 +1,14 @@
 package backend.academy.linktracker.bot;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import backend.academy.linktracker.bot.service.routing.ListenerService;
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.response.SendResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,10 @@ public class BotControllerTest {
 
     @Test
     void test1() throws Exception {
+        SendResponse mockResponse = mock(SendResponse.class);
+        when(mockResponse.isOk()).thenReturn(true);
+        when(telegramBot.execute(any())).thenReturn(mockResponse);
+
         String validJson = """
                 {
                   "id": 1,
