@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.grpc;
 
 import backend.academy.linktracker.bot.mapper.LinkUpdateMapper;
-import backend.academy.linktracker.bot.service.NotificationService;
+import backend.academy.linktracker.bot.service.notification.NotificationService;
 import backend.academy.linktracker.grpc.BotServiceGrpc;
 import backend.academy.linktracker.grpc.Empty;
 import backend.academy.linktracker.grpc.LinkUpdateMsg;

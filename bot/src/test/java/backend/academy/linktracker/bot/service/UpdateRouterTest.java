@@ -11,6 +11,11 @@ import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.enumResponse.ResponseCode;
 import backend.academy.linktracker.bot.service.dialog.DialogService;
+import backend.academy.linktracker.bot.service.dialog.StateService;
+import backend.academy.linktracker.bot.service.format.MessageService;
+import backend.academy.linktracker.bot.service.parser.CommandParser;
+import backend.academy.linktracker.bot.service.routing.CommandService;
+import backend.academy.linktracker.bot.service.routing.UpdateRouter;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;

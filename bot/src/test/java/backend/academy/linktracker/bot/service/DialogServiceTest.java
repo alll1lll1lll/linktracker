@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.service.dialog.DialogService;
 import backend.academy.linktracker.bot.service.dialog.DialogStageHandler;
+import backend.academy.linktracker.bot.service.dialog.StateService;
+import backend.academy.linktracker.bot.service.format.MessageService;
 import backend.academy.linktracker.bot.state.Context;
 import backend.academy.linktracker.bot.state.State;
 import com.pengrad.telegrambot.request.SendMessage;

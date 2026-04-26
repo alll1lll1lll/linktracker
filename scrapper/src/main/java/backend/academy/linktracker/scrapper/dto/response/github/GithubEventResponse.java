@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.dto.response.github;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class GithubEventResponse {
     private String type;
     private GithubActorResponse actor;
 
+    @JsonProperty("created_at")
     private OffsetDateTime createdAt;
 
     private GithubPayloadResponse payload;
@@ -34,6 +36,7 @@ public class GithubEventResponse {
         private String action;
         private GithubIssueResponse issue;
 
+        @JsonProperty("pull_request")
         private GithubPullRequestResponse pullRequest;
     }
 

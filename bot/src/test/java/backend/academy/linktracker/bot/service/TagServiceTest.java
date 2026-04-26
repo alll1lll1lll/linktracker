@@ -2,6 +2,7 @@ package backend.academy.linktracker.bot.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import backend.academy.linktracker.bot.service.tracking.TagService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;

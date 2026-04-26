@@ -11,7 +11,7 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+@Component("transportBotClient")
 @ConditionalOnProperty(name = "app.client-type", havingValue = "grpc")
 public class GrpcBotClient implements BotClient {
 

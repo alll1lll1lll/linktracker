@@ -3,7 +3,7 @@ package backend.academy.linktracker.bot.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.bot.service.StateService;
+import backend.academy.linktracker.bot.service.dialog.StateService;
 import backend.academy.linktracker.bot.state.Context;
 import backend.academy.linktracker.bot.state.State;
 import com.pengrad.telegrambot.model.Update;

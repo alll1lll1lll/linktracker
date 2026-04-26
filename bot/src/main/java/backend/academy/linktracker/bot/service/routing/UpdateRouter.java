@@ -1,8 +1,11 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.routing;
 
 import backend.academy.linktracker.bot.commands.CommandType;
 import backend.academy.linktracker.bot.enumResponse.ResponseCode;
 import backend.academy.linktracker.bot.service.dialog.DialogService;
+import backend.academy.linktracker.bot.service.dialog.StateService;
+import backend.academy.linktracker.bot.service.format.MessageService;
+import backend.academy.linktracker.bot.service.parser.CommandParser;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import lombok.RequiredArgsConstructor;

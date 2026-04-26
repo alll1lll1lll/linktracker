@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.enumResponse.ResponseCode;
+import backend.academy.linktracker.bot.service.format.MessageService;
+import backend.academy.linktracker.bot.service.parser.LinkParser;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.BeforeEach;

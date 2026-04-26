@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.tracking;
 
 import backend.academy.linktracker.bot.client.ScrapperClient;
 import backend.academy.linktracker.bot.dto.AddLinkRequest;

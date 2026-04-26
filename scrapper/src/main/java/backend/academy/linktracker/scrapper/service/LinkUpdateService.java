@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -29,6 +30,7 @@ public class LinkUpdateService {
                 .log("init handlers");
     }
 
+    @Transactional
     public boolean processUpdate(LinkModel link) {
         if (link == null || link.getUrl() == null || link.getUrl().getHost() == null) {
             log.atWarn().addKeyValue("event", "invalid_link_for_processing").log("not correct link");
@@ -55,8 +57,6 @@ public class LinkUpdateService {
                         .setCause(e)
                         .log("error handle link");
                 return false;
-            } finally {
-                linkRepository.updateLastUpdated(link.getId(), OffsetDateTime.now());
             }
         }
     }

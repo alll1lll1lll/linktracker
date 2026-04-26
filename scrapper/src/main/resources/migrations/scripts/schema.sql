@@ -31,7 +31,20 @@ CREATE TABLE subscription_tag (
     PRIMARY KEY (chat_id, link_id, tag_id),
     FOREIGN KEY (chat_id, link_id) REFERENCES subscription(chat_id, link_id) ON DELETE CASCADE
 );
+CREATE TABLE outbox_event (
+    id BIGSERIAL PRIMARY KEY,
+    link_id BIGINT NOT NULL,
+    url VARCHAR(2048) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
+CREATE TABLE outbox_event_chat_ids (
+    outbox_event_id BIGINT REFERENCES outbox_event(id) ON DELETE CASCADE,
+    chat_id BIGINT NOT NULL
+);
+
+CREATE INDEX idx_outbox_created_at ON outbox_event(created_at);
 CREATE INDEX IF NOT EXISTS idx_link_url ON link(url);
 CREATE INDEX IF NOT EXISTS idx_link_last_updated ON link(last_updated);
 CREATE INDEX IF NOT EXISTS idx_subscription_chat_id ON subscription(chat_id);

@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 @Slf4j
-@Component
+@Component("transportBotClient")
 @ConditionalOnProperty(name = "app.client-type", havingValue = "rest")
 public class RestBotClient implements BotClient {
     private final RestClient restClient;
 
     public RestBotClient(@Qualifier("botRestClient") RestClient restClient) {
         this.restClient = restClient;
-        log.info("BotClient is active. Using: REST");
+        log.atInfo().log("BotClient is active. Using: REST");
     }
 
     public void sendUpdate(LinkUpdate update) {

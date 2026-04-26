@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.dialog;
 
 import backend.academy.linktracker.bot.state.Context;
 import backend.academy.linktracker.bot.state.State;

@@ -3,7 +3,7 @@ package backend.academy.linktracker.bot;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import backend.academy.linktracker.bot.service.ListenerService;
+import backend.academy.linktracker.bot.service.routing.ListenerService;
 import com.pengrad.telegrambot.TelegramBot;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;

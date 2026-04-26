@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 
 import backend.academy.linktracker.bot.client.ScrapperClient;
 import backend.academy.linktracker.bot.exception.ServiceUnavailableException;
-import backend.academy.linktracker.bot.service.UpdateRouter;
+import backend.academy.linktracker.bot.service.routing.UpdateRouter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Chat;

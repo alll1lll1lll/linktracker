@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.parser;
 
 import java.net.URI;
 import java.net.URISyntaxException;

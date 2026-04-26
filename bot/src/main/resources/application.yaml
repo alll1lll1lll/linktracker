@@ -6,6 +6,9 @@ server:
       force: true
 
 spring:
+  devtools:
+    restart:
+      enabled: false
   application:
     name: bot
   messages:
@@ -18,9 +21,21 @@ spring:
       channels:
         scrapper-service:
           address: "localhost:9091"
+  kafka:
+    bootstrap-servers: "localhost:29092,localhost:29093,localhost:29094"
+    consumer:
+      group-id: "final-v50"
+      auto-offset-reset: "earliest"
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+    properties:
+      schema.registry.url: "http://localhost:8082"
+      specific.avro.reader: "true"
 
 app:
-  client-type: grpc
+  client-type: kafka
+  kafka:
+    topic-name: "link-updates"
   scrapper:
     url: "http://localhost:8081"
     grpc-address: "localhost:9091"

@@ -21,10 +21,21 @@ spring:
       bot-service:
         address: "static://localhost:9090"
         negotiation-type: plaintext
+  kafka:
+    bootstrap-servers: "localhost:29092,localhost:29093,localhost:29094"
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+    properties:
+      schema.registry.url: "http://localhost:8082"
+      enable.idempotence: "true"
 
 app:
-  client-type: grpc
+  client-type: kafka
   database-access-type: orm
+  kafka:
+    topic-name: "link-updates"
   bot:
     url: "http://localhost:8080"
     grpc-address: "localhost:9090"
@@ -38,12 +49,17 @@ app:
     batch-size: 100
     threads: 4
     offset: 0
+  outbox:
+    scheduler:
+      delay-ms: 5000
+      batch-size: 50
 
 logging:
   logging:
     level:
       org.springframework.boot.autoconfigure.liquibase: DEBUG
       liquibase: DEBUG
+      org.apache.kafka: WARN
   structured:
     format:
       console: logstash

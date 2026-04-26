@@ -24,6 +24,7 @@ public class StackOverflowCommentResponse {
 
         private StackOverflowOwnerResponse owner;
 
+        @JsonProperty("creation_date")
         private long creationDate;
 
         private String body;

@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.tracking;
 
 import java.util.Arrays;
 import java.util.List;

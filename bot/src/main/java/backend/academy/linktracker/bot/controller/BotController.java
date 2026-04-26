@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.controller;
 
 import backend.academy.linktracker.bot.dto.LinkUpdate;
-import backend.academy.linktracker.bot.service.NotificationService;
+import backend.academy.linktracker.bot.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

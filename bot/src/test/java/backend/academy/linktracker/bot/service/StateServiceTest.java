@@ -2,6 +2,7 @@ package backend.academy.linktracker.bot.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import backend.academy.linktracker.bot.service.dialog.StateService;
 import backend.academy.linktracker.bot.state.Context;
 import backend.academy.linktracker.bot.state.State;
 import java.net.URI;

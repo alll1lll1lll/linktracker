@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.service;
+package backend.academy.linktracker.bot.service.routing;
 
 import static org.slf4j.MDC.putCloseable;
 

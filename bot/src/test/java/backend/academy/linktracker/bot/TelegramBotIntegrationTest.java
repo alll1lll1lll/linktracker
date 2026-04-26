@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import backend.academy.linktracker.bot.properties.TelegramProperties;
-import backend.academy.linktracker.bot.service.ListenerService;
+import backend.academy.linktracker.bot.service.routing.ListenerService;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Message;

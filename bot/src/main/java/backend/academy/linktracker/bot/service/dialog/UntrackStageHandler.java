@@ -1,9 +1,8 @@
 package backend.academy.linktracker.bot.service.dialog;
 
 import backend.academy.linktracker.bot.enumResponse.ResponseCode;
-import backend.academy.linktracker.bot.service.MessageService;
-import backend.academy.linktracker.bot.service.StateService;
-import backend.academy.linktracker.bot.service.TrackService;
+import backend.academy.linktracker.bot.service.format.MessageService;
+import backend.academy.linktracker.bot.service.tracking.TrackService;
 import backend.academy.linktracker.bot.state.State;
 import com.pengrad.telegrambot.request.SendMessage;
 import lombok.RequiredArgsConstructor;

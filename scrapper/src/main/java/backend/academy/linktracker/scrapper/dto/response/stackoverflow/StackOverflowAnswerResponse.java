@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.dto.response.stackoverflow;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class StackOverflowAnswerResponse {
     public static class StackOverflowAnswerItemResponse {
         private StackOverflowOwnerResponse owner;
 
+        @JsonProperty("creation_date")
         private long creationDate;
 
         private String body;
@@ -30,6 +32,7 @@ public class StackOverflowAnswerResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StackOverflowOwnerResponse {
+        @JsonProperty("display_name")
         private String displayName;
     }
 }
